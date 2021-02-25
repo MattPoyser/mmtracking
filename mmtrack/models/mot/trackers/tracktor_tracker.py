@@ -6,6 +6,7 @@ from mmtrack.core import imrenormalize
 from mmtrack.models import TRACKERS
 from .base_tracker import BaseTracker
 
+temp_count = 0
 
 @TRACKERS.register_module()
 class TracktorTracker(BaseTracker):
@@ -77,8 +78,13 @@ class TracktorTracker(BaseTracker):
             return track_bboxes[valid_inds], track_labels[valid_inds], ids[
                 valid_inds]
         else:
+            global temp_count
             if isinstance(x, tuple):
-                raise AttributeError(x)
+                raise AttributeError(len(x), x)
+            else:
+                if temp_count < 1:
+                    print("grep: ", x)
+                    temp_count = 5
             track_bboxes, track_labels = detector.simple_test(x, img_metas, rescale)[0]
             # nms already applied
             return track_bboxes, track_labels
