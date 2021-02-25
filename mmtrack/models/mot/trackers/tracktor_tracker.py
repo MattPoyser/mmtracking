@@ -77,6 +77,8 @@ class TracktorTracker(BaseTracker):
             return track_bboxes[valid_inds], track_labels[valid_inds], ids[
                 valid_inds]
         else:
+            if isinstance(x, tuple):
+                raise AttributeError(x)
             track_bboxes, track_labels = detector.simple_test(x, img_metas, rescale)[0]
             # nms already applied
             return track_bboxes, track_labels
