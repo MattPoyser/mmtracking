@@ -62,19 +62,24 @@ class TracktorTracker(BaseTracker):
         if rescale:
             bboxes *= torch.tensor(img_metas[0]['scale_factor']).to(
                 bboxes.device)
-        track_bboxes, track_scores = detector.roi_head.simple_test_bboxes(
-            x, img_metas, [bboxes], None, rescale=rescale)
-        track_bboxes, track_labels, valid_inds = multiclass_nms(
-            track_bboxes[0],
-            track_scores[0],
-            0,
-            self.regression['nms'],
-            return_inds=True)
-        ids = ids[valid_inds]
+        if hasattr(detector, 'roi_head'):
+            track_bboxes, track_scores = detector.roi_head.simple_test_bboxes(
+                x, img_metas, [bboxes], None, rescale=rescale)
+            track_bboxes, track_labels, valid_inds = multiclass_nms(
+                track_bboxes[0],
+                track_scores[0],
+                0,
+                self.regression['nms'],
+                return_inds=True)
+            ids = ids[valid_inds]
 
-        valid_inds = track_bboxes[:, -1] > self.regression['obj_score_thr']
-        return track_bboxes[valid_inds], track_labels[valid_inds], ids[
-            valid_inds]
+            valid_inds = track_bboxes[:, -1] > self.regression['obj_score_thr']
+            return track_bboxes[valid_inds], track_labels[valid_inds], ids[
+                valid_inds]
+        else:
+            track_bboxes, track_labels = self.detector.simple_test(x, img_metas, rescale)[0]
+            # nms already applied
+            return track_bboxes, track_labels
 
     def track(self,
               img,
