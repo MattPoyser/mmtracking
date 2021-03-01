@@ -111,6 +111,8 @@ class DeepSORT(BaseMultiObjectTracker):
         else:
             raise TypeError('detector must has roi_head or bbox_head.')
 
+        if isinstance(x, tuple):
+            raise AttributeError(len(x), x)
         bboxes, labels, ids = self.tracker.track(
             img=img,
             img_metas=img_metas,
